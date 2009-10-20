@@ -5,6 +5,5 @@
 <locations>
 <location id="org.eclipse.rcp" path="${eclipse_home}" type="Feature"/>
 <location id="org.eclipse.rcp.source" path="${eclipse_home}" type="Feature"/>
-<location path="${project_loc:name.neilbartlett.extsvcs.target}/blueprint/" type="Directory"/>
 </locations>
 </target>
