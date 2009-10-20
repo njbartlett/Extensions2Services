@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Example Client
+Bundle-SymbolicName: name.neilbartlett.extsvcs.examples.client; singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: name.neilbartlett.extsvcs.examples.client.Activator
+Bundle-Vendor: Neil Bartlett
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ name.neilbartlett.extsvcs.core;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-ActivationPolicy: lazy
+Import-Package: name.neilbartlett.extsvcs.core,
+ org.osgi.service.log;version="1.3.0"

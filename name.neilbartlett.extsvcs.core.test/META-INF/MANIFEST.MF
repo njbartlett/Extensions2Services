@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Extensions/Services Integration - Core Tests
+Bundle-SymbolicName: name.neilbartlett.extsvcs.core.test
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Neil Bartlett
+Fragment-Host: name.neilbartlett.extsvcs.core;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Require-Bundle: org.junit4;bundle-version="4.5.0"
