@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.5"?>
+
+<target name="RCP + Blueprint">
+<locations>
+<location id="org.eclipse.rcp" path="${eclipse_home}" type="Feature"/>
+<location id="org.eclipse.rcp.source" path="${eclipse_home}" type="Feature"/>
+<location id="org.eclipse.jdt" path="${eclipse_home}" type="Feature"/>
+<location path="${project_loc:eu.wwuk.eclipse.extsvcs.target}/bundles" type="Directory"/>
+</locations>
+</target>

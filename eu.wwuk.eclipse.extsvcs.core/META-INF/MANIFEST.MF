@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Extension/Services Integration - Core
+Bundle-SymbolicName: eu.wwuk.eclipse.extsvcs.core;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: eu.wwuk.eclipse.extsvcs.core.internal.Activator
+Bundle-Vendor: Weigle Wilczek UK (WWUK)
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Import-Package: org.eclipse.core.runtime;version="3.4.0",
+ org.osgi.framework;version="1.3.0",
+ org.osgi.util.tracker;version="1.4.0"
+Export-Package: eu.wwuk.eclipse.extsvcs.core
+Bundle-ActivationPolicy: lazy

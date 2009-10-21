@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         id="application"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="eu.wwuk.eclipse.extsvcs.examples.client.Application">
+         </run>
+      </application>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            name="RCP Perspective"
+            class="eu.wwuk.eclipse.extsvcs.examples.client.Perspective"
+            id="eu.wwuk.eclipse.extsvcs.examples.client.perspective">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            class="eu.wwuk.eclipse.extsvcs.core.InjectionFactory:logView"
+            id="eu.wwuk.eclipse.extsvcs.examples.client.sampleView"
+            name="Sample"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="eu.wwuk.eclipse.extsvcs.core.injectedFactories">
+      <factory
+            class="eu.wwuk.eclipse.extsvcs.examples.client.view.SampleView"
+            id="logView">
+         <reference
+               cardinality="single"
+               interface="org.osgi.service.log.LogService">
+         </reference>
+      </factory>
+   </extension>
+
+</plugin>

@@ -1,0 +1,75 @@
+%! program = pdflatex
+
+\documentclass[12pt]{article}
+\usepackage{geometry} % see geometry.pdf on how to lay out the page. There's lots.
+
+\geometry{a4paper} % or letter or a5paper or ... etc
+% \geometry{landscape} % rotated page geometry
+
+% See the ``Article customise'' template for come common customisations
+\usepackage{listings}
+\lstloadlanguages{java,xml}
+
+\lstset{
+	%language=Java,
+	tabsize=3,
+	basicstyle=\scriptsize,
+	%keywordstyle=\bfseries\ttfamily,
+	%identifierstyle=\ttfamily,
+	%stringstyle=\ttfamily,
+	%showstringspaces=false,
+	%frame=none,
+	%numbers=left,
+	%numberstyle=\tiny,
+	%numberblanklines=false,
+	%numbersep=5pt
+}
+
+\title{Extensions-2-Services Manual}
+\author{Neil Bartlett}
+%\date{} % delete this line to display the current date
+
+%%% BEGIN DOCUMENT
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+
+Extensions-2-Services -- or \emph{e2s} as it will be often referred to in this manual -- is a framework for using Eclipse Extensions and OSGi Services in the same application. Extensions and services are both powerful but somewhat different approaches to the same problem, namely late binding in a modular application. Extensions tend to be used in Eclipse tooling plug-ins and Eclipse RCP (Rich Client Platform) applications, whereas services tend to have more widespread use in many OSGi environments.
+Therefore when building Eclipse plug-ins and Eclipse RCP applications and using standard OSGi components, it is highly likely this will result in a mixture of extensions and services. These must be integrated, which is unfortunately non-trivial because of the differences in the way they work. E2s offers a solution that eases the integration task.
+
+\subsection{Overview of Extensions}
+
+The Extension Registry has been a fundamental part of Eclipse since its beginning. It defines the concept of \emph{extensions} that are contributed to \emph{extension points}. An \emph{extension} is a declaration consisting of an XML sub-tree, which contains metadata about the functionality that is being contributed. For an example, the metadata for a ``view'' extension contains the name of the view, the icon to be displayed in the view's title bar, etc. It also contains the name of a class which implements the functionality of the view. An \emph{extension point} is merely a declaration that a bundle expects to be extended, and it defines the content and format of metadata that extensions should offer.
+
+Note that some extensions do not specify any class name, because they do not specify any functionality in terms of executable code. For example an extension may contribute ``help'' documentation to an application; this does not require programmatic code, only the location of the documentation and its title, language and so on. These kinds of purely declarative extensions are not interesting for the purposes of this manual, as we will shortly see.
+
+\subsection{Overview of Services}
+
+TODO
+
+\section{Development Guide}
+
+\subsection{The Injected Factories Extension Point}
+
+The \texttt{injectedFactories} extension point allows us to define a factory where each instance object generated from the factory is ``injected'' with a service reference. Each instance is subsequently notified when bound services become registered on unregistered, however the factory keeps track of generated objects only via weak references, allowing them to be garbage collected when no longer used by the 
+
+To declare a new injected factory, we create an extension into the \texttt{injected\-Fac\-tories} extension point as follows:
+
+\begin{lstlisting}[language=xml]
+   <extension
+         point="eu.wwuk.eclipse.extsvcs.core.injectedFactories">
+      <factory
+            id="logReaderView"
+            class="org.example.view.LogReaderView">
+         <reference
+               cardinality="single"
+               interface="org.osgi.service.log.LogReaderService">
+         </reference>
+      </factory>
+   </extension>
+\end{lstlisting}
+
+\end{document}
