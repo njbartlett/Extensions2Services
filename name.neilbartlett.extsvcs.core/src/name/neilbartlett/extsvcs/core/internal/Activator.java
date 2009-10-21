@@ -6,9 +6,6 @@ import org.osgi.framework.BundleContext;
 
 public class Activator implements BundleActivator {
 
-	public static final String PLUGIN_ID = "name.neilbartlett.extsvcs.core";
-	public static final String EXT_INJECTED_FACTORIES = "injectedFactories";
-	
 	private volatile static BundleContext context = null;
 	private volatile static InjectedFactoryRegistry factoryRegistry = null;
 	

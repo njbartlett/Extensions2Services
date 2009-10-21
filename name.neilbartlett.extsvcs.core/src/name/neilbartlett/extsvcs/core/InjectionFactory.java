@@ -1,7 +1,9 @@
 package name.neilbartlett.extsvcs.core;
 
+import static name.neilbartlett.extsvcs.core.internal.Constants.EXT_INJECTED_FACTORIES;
+import static name.neilbartlett.extsvcs.core.internal.Constants.PLUGIN_ID;
+
 import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.Map;
 
 import name.neilbartlett.extsvcs.core.internal.Activator;
@@ -33,7 +35,7 @@ public class InjectionFactory implements IExecutableExtension,
 		this.propertyName = propertyName;
 		
 		if(data == null)
-			throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, "Factory ID must be specified", null));
+			throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Factory ID must be specified", null));
 		if(data instanceof String) {
 			factoryId = (String) data;
 		} else if(data instanceof Dictionary<?, ?>) {
@@ -41,7 +43,7 @@ public class InjectionFactory implements IExecutableExtension,
 			Dictionary<String, String> dict = (Dictionary<String, String>) data;
 			factoryId = dict.get(PROP_FACTORY_ID);
 			if(factoryId == null)
-				throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, "A factoryId parameter must be specified", null));
+				throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "A factoryId parameter must be specified", null));
 		}
 	}
 
@@ -50,7 +52,7 @@ public class InjectionFactory implements IExecutableExtension,
 		
 		// 1. Find the injectedFactory element
 		IConfigurationElement matchingFactoryElement = null;
-		IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Activator.PLUGIN_ID, Activator.EXT_INJECTED_FACTORIES);
+		IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(PLUGIN_ID, EXT_INJECTED_FACTORIES);
 		for (IConfigurationElement element : elements) {
 			if(contribBundleId.equals(element.getContributor().getName())) {
 				String id = element.getAttribute(ATTR_ID);
@@ -86,7 +88,7 @@ public class InjectionFactory implements IExecutableExtension,
 	}
 
 	void throwError(String message, Throwable exception) throws CoreException {
-		throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, message, exception));
+		throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, exception));
 	}
 
 }

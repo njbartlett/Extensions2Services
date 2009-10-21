@@ -5,5 +5,7 @@
 <locations>
 <location id="org.eclipse.rcp" path="${eclipse_home}" type="Feature"/>
 <location id="org.eclipse.rcp.source" path="${eclipse_home}" type="Feature"/>
+<location path="${project_loc:name.neilbartlett.extsvcs.target}/bundles" type="Directory"/>
+<location id="org.eclipse.jdt" path="${eclipse_home}" type="Feature"/>
 </locations>
 </target>

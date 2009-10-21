@@ -74,6 +74,13 @@
 
    <element name="reference">
       <complexType>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
          <attribute name="interface" type="string" use="required">
             <annotation>
                <documentation>
@@ -85,13 +92,6 @@
             </annotation>
          </attribute>
          <attribute name="filter" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="setter" type="string" use="required">
             <annotation>
                <documentation>
                   
@@ -112,6 +112,20 @@
                   </enumeration>
                </restriction>
             </simpleType>
+         </attribute>
+         <attribute name="bind" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="unbind" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
          </attribute>
       </complexType>
    </element>

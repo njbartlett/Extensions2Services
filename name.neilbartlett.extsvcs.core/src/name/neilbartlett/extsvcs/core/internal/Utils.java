@@ -15,4 +15,14 @@ public class Utils {
 		}
 		return result;
 	}
+
+	public static String simpleClassName(Class<?> clazz) {
+		Package pkg = clazz.getPackage();
+		String result;
+		if(pkg == null)
+			result = clazz.getName();
+		else
+			result = clazz.getName().substring(pkg.getName().length() + 1);
+		return result;
+	}
 }

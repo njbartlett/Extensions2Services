@@ -35,8 +35,7 @@
             id="logView">
          <reference
                cardinality="single"
-               interface="org.osgi.service.log.LogService"
-               setter="setLogService">
+               interface="org.osgi.service.log.LogService">
          </reference>
       </factory>
    </extension>

@@ -1,5 +1,8 @@
 package name.neilbartlett.extsvcs.core.internal;
 
+import static name.neilbartlett.extsvcs.core.internal.Constants.EXT_INJECTED_FACTORIES;
+import static name.neilbartlett.extsvcs.core.internal.Constants.PLUGIN_ID;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +16,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.util.tracker.BundleTracker;
 
-
 public class InjectedFactoryRegistry extends BundleTracker {
 	
 	public InjectedFactoryRegistry(BundleContext context) {
@@ -26,7 +28,7 @@ public class InjectedFactoryRegistry extends BundleTracker {
 		IContributor contributor = ContributorFactoryOSGi.createContributor(bundle);
 		IExtension[] extensions = Platform.getExtensionRegistry().getExtensions(contributor);
 		
-		String extPointId = Activator.PLUGIN_ID + "." + Activator.EXT_INJECTED_FACTORIES;
+		String extPointId = PLUGIN_ID + "." + EXT_INJECTED_FACTORIES;
 		for (IExtension extension : extensions) {
 			if(extPointId.equals(extension.getExtensionPointUniqueIdentifier())) {
 				IConfigurationElement[] factoryElements = extension.getConfigurationElements();
