@@ -42,3 +42,13 @@ Further Information
 -------------------
 
 For extensive documentation, see the [included manual](http://github.com/njbartlett/Extensions2Services/raw/master/manual/manual.pdf).
+
+WARNING
+-------
+
+This code is currently experimental and contains very little error handling or diagnostic capabilities. These will be added in due course, but for the time being *caveat emptor*. 
+
+Licence
+-------
+
+All code and examples are licensed under the Eclipse Public Licence version 1.0.
