@@ -37,3 +37,8 @@ The approach used by e2s us to delcare an "injected factory" using a special ext
 	</extension>
 
 Notice thta the view extension declaration is exactly the same as a normal view declaration, except for the content of the `class` attribute.
+
+Further Information
+-------------------
+
+For extensive documentation, see the [included manual](raw/master/manual/manual.pdf).
