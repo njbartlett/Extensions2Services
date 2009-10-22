@@ -41,4 +41,4 @@ Notice thta the view extension declaration is exactly the same as a normal view 
 Further Information
 -------------------
 
-For extensive documentation, see the [included manual](raw/master/manual/manual.pdf).
+For extensive documentation, see the [included manual](http://github.com/njbartlett/Extensions2Services/raw/master/manual/manual.pdf).
