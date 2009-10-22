@@ -22,22 +22,38 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            class="eu.wwuk.eclipse.extsvcs.core.InjectionFactory:logView"
-            id="eu.wwuk.eclipse.extsvcs.examples.client.sampleView"
-            name="Sample"
-            restorable="true">
+            class="eu.wwuk.eclipse.extsvcs.core.InjectionFactory:logReaderView"
+            icon="icons/alt_about.gif"
+            id="org.example.views.logView"
+            name="Log Reader">
       </view>
    </extension>
    <extension
          point="eu.wwuk.eclipse.extsvcs.core.injectedFactories">
       <factory
-            class="eu.wwuk.eclipse.extsvcs.examples.client.view.SampleView"
-            id="logView">
+            class="eu.wwuk.eclipse.extsvcs.examples.client.view.LogReaderView"
+            id="logReaderView">
          <reference
                cardinality="single"
                interface="org.osgi.service.log.LogService">
          </reference>
       </factory>
+      <factory
+            class="eu.wwuk.eclipse.extsvcs.examples.client.prefs.LogPreferencePage"
+            id="loggingPrefPage">
+         <reference
+               cardinality="single"
+               interface="org.osgi.service.log.LogService">
+         </reference>
+      </factory>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="eu.wwuk.eclipse.extsvcs.core.InjectionFactory:loggingPrefPage"
+            id="eu.wwuk.eclipse.extsvcs.examples.client.loggingPrefPage"
+            name="Logging">
+      </page>
    </extension>
 
 </plugin>

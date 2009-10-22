@@ -7,6 +7,9 @@
 % \geometry{landscape} % rotated page geometry
 
 % See the ``Article customise'' template for come common customisations
+\usepackage{float}
+\floatstyle{ruled}
+
 \usepackage{listings}
 \lstloadlanguages{java,xml}
 
@@ -24,6 +27,8 @@
 	%numberblanklines=false,
 	%numbersep=5pt
 }
+\newfloat{program}{thp}{lop}
+\floatname{program}{Listing}
 
 \title{Extensions-2-Services Manual}
 \author{Neil Bartlett}
@@ -37,8 +42,8 @@
 
 \section{Introduction}
 
-Extensions-2-Services -- or \emph{e2s} as it will be often referred to in this manual -- is a framework for using Eclipse Extensions and OSGi Services in the same application. Extensions and services are both powerful but somewhat different approaches to the same problem, namely late binding in a modular application. Extensions tend to be used in Eclipse tooling plug-ins and Eclipse RCP (Rich Client Platform) applications, whereas services tend to have more widespread use in many OSGi environments.
-Therefore when building Eclipse plug-ins and Eclipse RCP applications and using standard OSGi components, it is highly likely this will result in a mixture of extensions and services. These must be integrated, which is unfortunately non-trivial because of the differences in the way they work. E2s offers a solution that eases the integration task.
+Extensions-2-Services -- or \emph{e2s} as it will be referred to in this manual -- is a framework for using Eclipse Extensions and OSGi Services in the same application. Extensions and services are both powerful but somewhat different approaches to the same problem, namely late binding in a modular application. Extensions tend to be used in Eclipse tooling plug-ins and Eclipse RCP (Rich Client Platform) applications, whereas services tend to have more widespread use in many OSGi environments.
+Therefore when building Eclipse plug-ins and Eclipse RCP applications and using standard OSGi components, it is highly likely this will result in a mixture of extensions and services. These must be integrated, which is unfortunately non-trivial because of the differences in the way they work. \emph{E2s} offers a solution that eases the integration task.
 
 \subsection{Overview of Extensions}
 
@@ -50,13 +55,49 @@ Note that some extensions do not specify any class name, because they do not spe
 
 TODO
 
+\subsection{Challenges Using Services from Extensions}
+
+Let us suppose that we wish develop a view in Eclipse that shows the content of the OSGi log reader service, as defined in the Services Compendium. This requires us to access and call a service -- \texttt{LogReaderService} -- from an extension object implementing the \texttt{IViewPart} interface. There are several challenges we must overcome.
+
+\subsubsection{Lack of References to OSGi APIs}
+
+Extension objects such as views are instantiated by the Extension Registry using their default no-arg constructors. This means these objects are created with no references to the \texttt{BundleContext} of their owning bundles and therefore cannot call the API required to lookup and obtain services.
+
+\subsubsection{Lifecycle Mismatch}
+
+Extensions and services exist on slightly different lifecycle. Services can only be registered or used by a bundle in the ACTIVE state, and this is the state that we have the most control over. Bundles move in and out of ACTIVE state whenever we wish them to, and therefore services can come and go many times during the lifetime of an application.
+
+Extensions on the other hand are tied to the RESOLVED state of their owning bundle. We have very little control over RESOLVED state: though we can request a bundle to be resolved it may be implicitly resolved at other times; and there is no way to explicitly un-resolve a bundle except by completely removing it.
+
+This makes it hard for extensions to \emph{depend} on services. Between services, if service $A$ has a mandatory dependency on $B$ and $B$ goes away, then we simply make $A$ go away too. Extensions cannot be made to go away, so they cannot have mandatory dependencies.
+
+\subsubsection{Factories Versus Singletons}
+
+An extension represents a factory, therefore the client of an extension generally expects to receive a new, private object each time it calls \texttt{create\-Exec\-utable\-Ext\-en\-sion}. However, services are long-lived, shared objects -- the same object is reused many times by many clients.
+
+Some previous approaches to extensions/services integration have simply allowed for a service object to be supplied directly in response to the call to \texttt{create\-Exec\-utable\-Ext\-en\-sion}. This approach fails because some extension point client rely on factory behaviour. For example the \texttt{org.eclipse.ui.preferencePages} extension point is used to contribute pages to the main Preferences dialog, and each time the dialog is opened the workbench creates a new instance of the page object and discards it when the dialog is closed. Discarding causes the SWT resources inside it to be disposed, after which they are no longer usable. If we then force the workbench to reuse the same page object then it will attempt to reuse these previously disposed SWT resources, which results in \texttt{SWTError} exceptions. 
+
+\subsubsection{No Explicit Release}
+
+When using services it is important to release a service when we have finished using it by calling \texttt{ungetService}. This allows OSGi to accurately track which bundles are using which services. If using the \texttt{ServiceTracker} API the \texttt{ungetService} call is handled for us but the tracker itself consumes resources while it is active, and therefore it should also be released (by calling \texttt{close}) when we are done with it.
+
+Unfortunately extensions provide no kind of release mechanism whereby the client of an extension object signals that it no longer requires the object. Returning to the preference page example, the workbench will generate new preference page objects each time the preferences dialog is opened, but there is no way for it to signal when those objects should be cleaned up -- instead the references to them are released and they are allowed to be garbage collected.
+
+A na\"\i{}ve approach to accessing services from an extension might be to create a \texttt{ServiceTracker} for each generated extension object. Unfortunately this will result in creating an ever-increasing number of trackers without ever closing them. While it is possible to hook into garbage collection events to close the tracker when the object is finally collected, this tends to be far too late.
+
+\section{Our Approach}
+
+\emph{E2s} uses a conceptually simple solution to the above problems. It defines the idea of an ``injected factory'', which is a factory that manages references to one or more OSGi services. An injected factory is declared and configured via its own extension point; this is an approach that will be very familiar to Eclipse developers. Once configured, the factory is used as an alternative means of supplying new extension objects for any arbitrary extension point.
+
+A factory may have zero or more references to services, and these references are managed at the factory level. Therefore if a bundle declares one factory containing one reference, then a maximum of one tracker is created. The factory uses the tracker to update all instances of the component class that it has previously created and have not yet been garbage-collected\footnote{To allow the generated objects from a factory to be GC'd, the factory maintains only weak references to them. They therefore become eligible for collection as soon as they are no longer used by the client that requested their creation.}.
+
+Much of the design of \emph{e2s} is inspired by the Declarative Services specification from the OSGi Services Compendium. Unfortunately DS itself is not directly usable for our purposes but its style of referencing services and defining components is close to our needs.
+
 \section{Development Guide}
 
 \subsection{The Injected Factories Extension Point}
 
-The \texttt{injectedFactories} extension point allows us to define a factory where each instance object generated from the factory is ``injected'' with a service reference. Each instance is subsequently notified when bound services become registered on unregistered, however the factory keeps track of generated objects only via weak references, allowing them to be garbage collected when no longer used by the 
-
-To declare a new injected factory, we create an extension into the \texttt{injected\-Fac\-tories} extension point as follows:
+The \texttt{eu.wwuk.eclipse.extsvcs.core.injectedFactories} extension point allows us to define a factory where each instance object generated from the factory is ``injected'' with a service reference. Each instance is also subsequently notified when bound services become registered or unregistered. To declare a new injected factory, we create an extension to the \texttt{injected\-Fac\-tories} extension point as follows:
 
 \begin{lstlisting}[language=xml]
    <extension
@@ -71,5 +112,127 @@ To declare a new injected factory, we create an extension into the \texttt{injec
       </factory>
    </extension>
 \end{lstlisting}
+
+This declares a factory with the identity \texttt{logReaderView} that creates new instances of the \texttt{LogReaderView} class. The attributes of the \texttt{factory} element are shown in Table \ref{tbl:factory_element_attributes}.
+
+\begin{table}
+	\centering
+	\begin{tabular}{|l|l|l|p{6cm}|}
+	\hline
+	Name & Type & Required? & Notes \\
+	\hline
+	\texttt{id} & String & Yes & The identity used to refer to the factory. \\
+	\hline
+	\texttt{class} & Java class name & Yes & The class which is to be instantiated by the factory.\\
+	\hline
+	\end{tabular}
+	\caption{Attributes of the \texttt{factory} element}
+	\label{tbl:factory_element_attributes}
+\end{table}
+
+The \texttt{factory} element may contain zero or more \texttt{reference} elements which declare a binding to an OSGi service. In this case there is one reference to the \texttt{LogReaderService} defined by the OSGi Services Compendium specification, and that reference is singular, i.e. it binds only to one instance of the service. The attributes of the \texttt{reference} element are shown in Table \ref{tbl:reference_element_attributes}.
+
+\begin{table}
+	\centering
+	\begin{tabular}{|l|l|l|p{5cm}|}
+	\hline
+	Name & Type & Required? & Notes \\
+	\hline
+	\texttt{name} & String & No & The name of the reference, which can be used by instances to locate services. Defaults to the value of the \texttt{interface} attribute.\\
+	\hline
+	\texttt{interface} & Java class name & Yes & The interface name of the OSGi service to bind to.\\
+	\hline
+	\texttt{filter} & String & No & An optional additional filter which may be used to restrict the set of services that may be bound by the reference.\\
+	\hline
+	\texttt{cardinality} & [\texttt{single}$|$\texttt{multiple}] & No & Whether to bind to a single instance of the service or all available. Defaults to \texttt{single}.\\
+	\hline
+	\texttt{bind} & String & No & The name of the method to call on the factory-generated objects when a service is bound.\\
+	\hline
+	\texttt{unbind} & String & No & The name of the method to call on the factory-generated objects when a service is unbound.\\
+	\hline
+	\end{tabular}
+	\caption{Attributes of the \texttt{reference} element}
+	\label{tbl:reference_element_attributes}
+\end{table}
+
+\subsection{Using a Declared Factory from an Extension}
+
+Whereas the \texttt{injectedFactory} extension point allows us only to \emph{declare} a factory, we need a way to actually create and use the factory in an extension to an existing extension point. For example to create a View that may be opened by the user in the workbench, we have to declare an extension to the \texttt{org.eclipse.ui.views} extension point.
+
+The connection between these is a special class \texttt{InjectionFactory} that we can pass, with some additional data, to the \texttt{class} attribute of \emph{any} extension type. Therefore we can define our View extension as follows:
+
+\begin{lstlisting}[language=xml]
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            id="org.example.views.logView"
+            class="eu.wwuk.eclipse.extsvcs.core.InjectionFactory:logReaderView"
+            name="Log Reader"
+            icon="icons/log.gif">
+      </view>
+   </extension>
+\end{lstlisting}
+
+This is exactly the same as a normal view declaration, except for the content of the \texttt{class} attribute. Note the use of the \texttt{InjectionFactory} class followed by a colon and then a factory ID -- this is a hook back to the factory with the same ID that was declared in the previous section. Any extension point with a \texttt{class} attribute can use this approach.
+
+\subsection{The Component Instance Class}
+
+Listing \ref{lst:LogReaderView.java} shows an example of a class that may be instantiated by an injected factory. Note that it is ``POJO'' inasmuch as it does not require any special interfaces to be implemented in order to benefit from the framework -- the service instances are supplied and withdrawn via normal set and ``unset'' methods, also known as bind and unbind.
+
+\begin{program}
+\lstinputlisting[firstline=9]{../eu.wwuk.eclipse.extsvcs.examples.client/src/eu/wwuk/eclipse/extsvcs/examples/client/view/LogReaderView.java}
+\caption{An Example Component Class}
+\label{lst:LogReaderView.java}
+\end{program}
+
+\subsection{Reference Cardinality}
+
+The cardinality of a service reference may be either single or multiple, where single is the default.
+
+When single cardinality is used, the factory will call the bind method at most once to supply a single instance of the service. If more than one instance is available then the standard ranking approach -- as documented in the JavaDocs for \texttt{ServiceTracker.getServiceReference()} -- is used. If the currently-bound service instance becomes unavailable then the unbind method will be called and the reference will be in an unbound state. If a suitable replacement service is immediately available, or later becomes available, then the bind method will be called again to supply that instance. Note that the reference is never rebound as the result of a higher-ranked service than the currently bound one becoming available. The ranking of services is only considered when the reference is currently in the unbound state and there are many possible service instances that could be chosen.
+
+When multiple cardinality is used, the bind method is simply called for every available service matching the filter, and the unbind method is called whenever one of those bound services becomes unavailable.
+
+Note that both the single and multiple cardinalities permit there to be zero bound services at any time, i.e. they are equivalent to ``\texttt{0..1}'' and ``\texttt{0..n}'' cardinalities, and there is nothing equivalent to either ``\texttt{1..1}'' or ``\texttt{1..n}''. This is because extensions cannot be dynamically disabled, so we cannot make the extension available only when there are one or more service instances. Component implementation classes \emph{must} be written to tolerate the absence of a service for periods of time, and this often has implications on the behaviour of the user interface. For example a Log Reader View should show an error placeholder when the \texttt{LogReaderService} is unavailable.
+
+\subsection{Default Bind Method Names}
+
+The methods \texttt{setLogReaderService} and \texttt{unsetLogReaderService} are used to \emph{bind} and \emph{unbind} a service to/from the component instance. The exact method names may be specified by supplying the \texttt{bind} and \texttt{unbind} attributes on the \texttt{reference} element.
+
+However both \texttt{bind} and \texttt{unbind} attributes are optional, therefore if omitted, default method names are assumed based on the interface name of the OSGi service. First the package name of the interface is dropped, so \texttt{org.osgi.service\-.\-log\-.\-Log\-Read\-er\-Ser\-vice} becomes simply \texttt{LogReaderService}. Then a prefix is added, depending on whether the reference cardinality is single or multiple. If single, then the prefixes for bind and unbind are ``set'' and ``unset'' respectively. If multiple cardinality then the prefixes are ``add'' and ``remove''.
+
+For example, a reference to the service \texttt{org\-.\-osgi\-.\-service\-.\-event\-.\-Event\-Admin} with single cardinality will have default bind and unbind methods \texttt{set\-Event\-Admin} and \texttt{unset\-Event\-Admin}. A multiple-cardinality reference to the service \texttt{org\-.\-foo\-.\-Config\-List\-ener} will have bind and unbind methods \texttt{add\-Config\-List\-ener} and \texttt{remove\-Con\-fig\-List\-ener}.
+
+\subsection{Concurrency Issues}
+
+In OSGi, services can be registered or unregistered on any thread. Since the bind and unbind methods are called synchronously in response to service events, they can also be executed on any thread. Therefore it is imperative to use thread-safe coding practices when working with bound service objects.
+
+It is also important to remember that GUI operations must only be performed on the main event thread. When implementing a bind/unbind method we cannot assume that the method will be executed on the GUI thread, so we should not perform GUI operations directly. Instead, pass a \texttt{Runnable} to the \texttt{asyncExec} method of the SWT Display object, as shown in Listing \ref{lst:Display.asyncExec}.
+
+\begin{program}
+	\begin{lstlisting}
+	public void setLogReaderService(LogReaderService log) {
+		final Enumeration entries = log.getLog();
+		table.getDisplay().asyncExec(new Runnable() {
+			public void run() {
+				viewer.setInput(entries);
+			}
+		});
+	}
+	\end{lstlisting}
+	\caption{Using \texttt{Display.asyncExec} to Perform GUI Operations}
+	\label{lst:Display.asyncExec}
+\end{program}
+
+\subsection{The Service Lookup Strategy}
+
+Since the dynamism of bind and unbind methods can complicate the programming of otherwise-simple objects, we offer an alternative mechanism for looking up service instances when the service is needed by the extension object.
+
+The lookup method is named \texttt{locateService} and it exists on an interface named \texttt{ComponentContext}. We need a way to supply an instance of this \texttt{Comp\-onent\-Con\-text} to the extension object, therefore we define another interface \texttt{Inj\-ected\-Comp\-onent} with one method, \texttt{setComponentContext}. When a factory creates a new object it will check if the object implements \texttt{InjectedComponent} and if so it will provide it with its context by calling \texttt{setComponentContext}.
+
+The \texttt{locateService} method takes the name of one of the declared reference elements and returns a snapshot of the currently bound service instance, or \texttt{null} if the reference is unbound. Note that the extension object must not hold onto the return value from \texttt{locateService} and reuse it over a period of time; it is intended to be used as quickly as possible and then discarded.
+
+
+
 
 \end{document}

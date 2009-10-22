@@ -86,9 +86,6 @@
                <documentation>
                   The name of the reference, which can be used by components to locate service instances using the &lt;code&gt;ComponentContext.locateService(String)&lt;/code&gt; method. This attribute is optional but if not defined then the class name of the service interface will be taken as the name for the reference.
                </documentation>
-               <appinfo>
-                  <meta.attribute kind="java"/>
-               </appinfo>
             </annotation>
          </attribute>
          <attribute name="interface" type="string" use="required">
