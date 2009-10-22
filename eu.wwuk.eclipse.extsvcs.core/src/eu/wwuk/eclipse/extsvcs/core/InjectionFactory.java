@@ -6,7 +6,6 @@ import static eu.wwuk.eclipse.extsvcs.core.internal.Constants.PLUGIN_ID;
 import java.util.Dictionary;
 import java.util.Map;
 
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
@@ -20,6 +19,26 @@ import org.osgi.framework.BundleException;
 import eu.wwuk.eclipse.extsvcs.core.internal.Activator;
 import eu.wwuk.eclipse.extsvcs.core.internal.InjectedFactory;
 
+/**
+ * A factory for service-injected components. This class must not be
+ * instantiated directly from Java code, it is intended to be used in the
+ * <code>class</code> attribute of an extension declaration along with
+ * additional data indicating the factory ID to access. For example:
+ * 
+ * <pre>
+ * 	&lt;extension
+	      point="org.eclipse.ui.views"&gt;
+	   &lt;view
+	         id="org.example.views.logView"
+	         class="<strong>eu.wwuk.eclipse.extsvcs.core.InjectionFactory</strong>:logReaderView"
+	   &lt;/view&gt;
+	&lt;/extension&gt;
+
+ * </pre>
+ * 
+ * @author Neil Bartlett
+ * 
+ */
 public class InjectionFactory implements IExecutableExtension,
 		IExecutableExtensionFactory {
 	

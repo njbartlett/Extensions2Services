@@ -7,8 +7,6 @@
       </appinfo>
       <documentation>
          This extension point is used to define factories that can be used by other extensions to enable integration between extensions and OSGi Services.
-
-&lt;p&gt;A contributed extension in Eclipse that has a &lt;code&gt;class&lt;/code&gt; attribute is a factory. The extension point (i.e. the client of the extension) uses that factory to create new instances of the referenced class; those instances are typically discarded and allowed to be GC&apos;d. OSGi Services are different: they are conceptually singleton-like objects that may be reused many times by many clients. They are also dynamic, and may come and go at any time.&lt;/p&gt;
       </documentation>
    </annotation>
 
@@ -57,14 +55,14 @@
          <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
-                  
+                  The identity of this factory. This identity may be used as the parameter to the InjectionFactory class when used in the &lt;samp&gt;class&lt;/samp&gt; attribute of another extension.
                </documentation>
             </annotation>
          </attribute>
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  
+                  The Java class to be instantiated by this factory, which must have a zero-argument constructor and may optionally implement the &lt;samp&gt;InjectedComponent&lt;/samp&gt; interface.
                </documentation>
                <appinfo>
                   <meta.attribute kind="java"/>
@@ -84,7 +82,7 @@
          <attribute name="name" type="string">
             <annotation>
                <documentation>
-                  The name of the reference, which can be used by components to locate service instances using the &lt;code&gt;ComponentContext.locateService(String)&lt;/code&gt; method. This attribute is optional but if not defined then the class name of the service interface will be taken as the name for the reference.
+                  The name of the reference, which can be used by components to locate service instances using the &lt;samp&gt;ComponentContext.locateService(String)&lt;/samp&gt; method. This attribute is optional but if not defined then the class name of the service interface will be taken as the name for the reference.
                </documentation>
             </annotation>
          </attribute>
@@ -101,14 +99,14 @@
          <attribute name="filter" type="string">
             <annotation>
                <documentation>
-                  An additional filter that may be used to narrow down the set of services that may be bound by this reference. It is in the LDAP format used by all OSGi filter strings.
+                  An optional additional filter that may be used to narrow down the set of services that may be bound by this reference. It is in the LDAP format used by all OSGi filter strings.
                </documentation>
             </annotation>
          </attribute>
          <attribute name="cardinality" use="default" value="single">
             <annotation>
                <documentation>
-                  
+                  The cardinality of the reference: either &lt;samp&gt;single&lt;/samp&gt; or &lt;samp&gt;multiple&lt;/samp&gt;.
                </documentation>
             </annotation>
             <simpleType>
@@ -123,14 +121,14 @@
          <attribute name="bind" type="string">
             <annotation>
                <documentation>
-                  
+                  The name of the bind method in the component class. This attribute is optional. If the interface name is &lt;samp&gt;org.mypackage.Foo&lt;/samp&gt; then the defeault bind method name will be &lt;samp&gt;setFoo&lt;/samp&gt; for single-cardinality references or &lt;samp&gt;addFoo&lt;/samp&gt; for multiple-cardinality.
                </documentation>
             </annotation>
          </attribute>
          <attribute name="unbind" type="string">
             <annotation>
                <documentation>
-                  
+                  The name of the unbind method in the component class. This attribute is optional. If the interface name is &lt;samp&gt;org.mypackage.Foo&lt;/samp&gt; then the default unbind method name will be &lt;samp&gt;unsetFoo&lt;/samp&gt; for single-cardinality references or &lt;samp&gt;removeFoo&lt;/samp&gt; for multiple-cardinality.
                </documentation>
             </annotation>
          </attribute>
@@ -151,7 +149,32 @@
          <meta.section type="examples"/>
       </appinfo>
       <documentation>
-         [Enter extension point usage example here.]
+         &lt;p&gt;
+&lt;pre&gt;
+	&lt;!-- Factory Declaration --&gt;
+	&lt;extension
+	      point=&quot;eu.wwuk.eclipse.extsvcs.core.injectedFactories&quot;&gt;
+	   &lt;factory
+	         id=&quot;logReaderView&quot;
+	         class=&quot;org.example.view.LogReaderView&quot;&gt;
+	      &lt;reference
+	            interface=&quot;org.osgi.service.log.LogReaderService&quot;&gt;
+	      &lt;/reference&gt;
+	   &lt;/factory&gt;
+	&lt;/extension&gt;
+
+	&lt;!-- Standard View Declaration --&gt;
+	&lt;extension
+	      point=&quot;org.eclipse.ui.views&quot;&gt;
+	   &lt;view
+	         id=&quot;org.example.views.logView&quot;
+	         class=&quot;eu.wwuk.eclipse.extsvcs.core.InjectionFactory:logReaderView&quot;
+	         name=&quot;Log Reader&quot;
+	         icon=&quot;icons/log.gif&quot;&gt;
+	   &lt;/view&gt;
+	&lt;/extension&gt;
+&lt;/pre&gt;
+&lt;/p&gt;
       </documentation>
    </annotation>
 
@@ -160,7 +183,9 @@
          <meta.section type="apiinfo"/>
       </appinfo>
       <documentation>
-         [Enter API information here.]
+         The value of the &lt;samp&gt;class&lt;/samp&gt; attribute may be any class owned by or visible to the declaring bundle and it must have an accessible, zero-argument constructor.
+
+&lt;p&gt;The class &lt;em&gt;may&lt;/em&gt; also choose to implement the &lt;samp&gt;InjectedComponent&lt;/samp&gt; interface if it wishes to receive a &lt;samp&gt;ComponentContext&lt;/samp&gt; reference, which it can use to perform simple service lookups.&lt;/p&gt;
       </documentation>
    </annotation>
 
@@ -169,7 +194,7 @@
          <meta.section type="implementation"/>
       </appinfo>
       <documentation>
-         [Enter information about supplied implementation of this extension point.]
+         No factories are pre-defined by the core bundle.
       </documentation>
    </annotation>
 

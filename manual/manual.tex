@@ -61,7 +61,7 @@ Let us suppose that we wish develop a view in Eclipse that shows the content of 
 
 \subsubsection{Lack of References to OSGi APIs}
 
-Extension objects such as views are instantiated by the Extension Registry using their default no-arg constructors. This means these objects are created with no references to the \texttt{BundleContext} of their owning bundles and therefore cannot call the API required to lookup and obtain services.
+Extension objects such as views are instantiated by the Extension Registry using their default no-arg constructors. This means these objects are created with no references to the \texttt{BundleContext} of their owning bundles and therefore cannot call the API required to lookup and obtain services. A simple workaround for this problem involves writing a bundle activator that saves the \texttt{BundleContext} in a static field accessible to the extension class. Unfortunately this approach is not very robust and tends to produce a lot of boilerplate code.
 
 \subsubsection{Lifecycle Mismatch}
 
@@ -75,7 +75,7 @@ This makes it hard for extensions to \emph{depend} on services. Between services
 
 An extension represents a factory, therefore the client of an extension generally expects to receive a new, private object each time it calls \texttt{create\-Exec\-utable\-Ext\-en\-sion}. However, services are long-lived, shared objects -- the same object is reused many times by many clients.
 
-Some previous approaches to extensions/services integration have simply allowed for a service object to be supplied directly in response to the call to \texttt{create\-Exec\-utable\-Ext\-en\-sion}. This approach fails because some extension point client rely on factory behaviour. For example the \texttt{org.eclipse.ui.preferencePages} extension point is used to contribute pages to the main Preferences dialog, and each time the dialog is opened the workbench creates a new instance of the page object and discards it when the dialog is closed. Discarding causes the SWT resources inside it to be disposed, after which they are no longer usable. If we then force the workbench to reuse the same page object then it will attempt to reuse these previously disposed SWT resources, which results in \texttt{SWTError} exceptions. 
+Some previous approaches to extensions/services integration have simply allowed for a service object to be supplied directly in response to the call to \texttt{create\-Exec\-utable\-Ext\-en\-sion}. This approach fails because some extension point clients rely on factory behaviour. For example the \texttt{org.eclipse.ui.preferencePages} extension point is used to contribute pages to the main Preferences dialog, and each time the dialog is opened the workbench creates a new instance of the page object and discards it when the dialog is closed. Discarding causes the SWT resources inside it to be disposed, after which they are no longer usable. If we then force the workbench to reuse the same page object then it will attempt to reuse these previously disposed SWT resources, which results in \texttt{SWTError} exceptions. 
 
 \subsubsection{No Explicit Release}
 
@@ -83,7 +83,7 @@ When using services it is important to release a service when we have finished u
 
 Unfortunately extensions provide no kind of release mechanism whereby the client of an extension object signals that it no longer requires the object. Returning to the preference page example, the workbench will generate new preference page objects each time the preferences dialog is opened, but there is no way for it to signal when those objects should be cleaned up -- instead the references to them are released and they are allowed to be garbage collected.
 
-A na\"\i{}ve approach to accessing services from an extension might be to create a \texttt{ServiceTracker} for each generated extension object. Unfortunately this will result in creating an ever-increasing number of trackers without ever closing them. While it is possible to hook into garbage collection events to close the tracker when the object is finally collected, this tends to be far too late.
+A na\"\i{}ve approach to accessing services from an extension might be to create a \texttt{ServiceTracker} for each generated extension object. Unfortunately this will result in creating and opening an increasing number of trackers without ever closing them. While it is possible to hook into garbage collection events to close the tracker when the object is finally collected, this tends to happen far too late.
 
 \section{Our Approach}
 
@@ -230,9 +230,13 @@ Since the dynamism of bind and unbind methods can complicate the programming of 
 
 The lookup method is named \texttt{locateService} and it exists on an interface named \texttt{ComponentContext}. We need a way to supply an instance of this \texttt{Comp\-onent\-Con\-text} to the extension object, therefore we define another interface \texttt{Inj\-ected\-Comp\-onent} with one method, \texttt{setComponentContext}. When a factory creates a new object it will check if the object implements \texttt{InjectedComponent} and if so it will provide it with its context by calling \texttt{setComponentContext}.
 
-The \texttt{locateService} method takes the name of one of the declared reference elements and returns a snapshot of the currently bound service instance, or \texttt{null} if the reference is unbound. Note that the extension object must not hold onto the return value from \texttt{locateService} and reuse it over a period of time; it is intended to be used as quickly as possible and then discarded.
+The \texttt{locateService} method takes the name of one of the declared reference elements and returns a snapshot of the currently bound service instance, or \texttt{null} if the reference is unbound. Note that the extension object must not hold onto the return value from \texttt{locateService} and reuse it over a period of time; it is intended to be used as quickly as possible and then discarded. Listing \ref{lst:EventSendingView.java} shows an example of typical usage of the lookup strategy.
 
-
+\begin{program}
+\lstinputlisting[firstline=17]{../eu.wwuk.eclipse.extsvcs.examples.client/src/eu/wwuk/eclipse/extsvcs/examples/client/view/EventSendingView.java}
+\caption{Example Usage of the Lookup Strategy}
+\label{lst:EventSendingView.java}
+\end{program}
 
 
 \end{document}
