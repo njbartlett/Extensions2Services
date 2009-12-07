@@ -10,23 +10,15 @@
  ******************************************************************************/
 package eu.wwuk.eclipse.extsvcs.core.internal;
 
-import static eu.wwuk.eclipse.extsvcs.core.internal.Constants.ATTR_FACTORY_CLASS;
-import static eu.wwuk.eclipse.extsvcs.core.internal.Constants.ATTR_FACTORY_ID;
-import static eu.wwuk.eclipse.extsvcs.core.internal.Constants.ATTR_REFERENCE_BIND;
-import static eu.wwuk.eclipse.extsvcs.core.internal.Constants.ATTR_REFERENCE_CARDINALITY;
-import static eu.wwuk.eclipse.extsvcs.core.internal.Constants.ATTR_REFERENCE_FILTER;
-import static eu.wwuk.eclipse.extsvcs.core.internal.Constants.ATTR_REFERENCE_INTERFACE;
-import static eu.wwuk.eclipse.extsvcs.core.internal.Constants.ATTR_REFERENCE_UNBIND;
-import static eu.wwuk.eclipse.extsvcs.core.internal.Constants.ELEM_REFERENCE;
-import static eu.wwuk.eclipse.extsvcs.core.internal.Constants.PLUGIN_ID;
-import static eu.wwuk.eclipse.extsvcs.core.internal.Constants.VAL_REFERENCE_CARDINALITY_MULTIPLE;
-import static eu.wwuk.eclipse.extsvcs.core.internal.Constants.VAL_REFERENCE_CARDINALITY_SINGLE;
+import static eu.wwuk.eclipse.extsvcs.core.internal.Constants.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -36,6 +28,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.tracker.ServiceTracker;
 
 import eu.wwuk.eclipse.extsvcs.core.InjectedComponent;
@@ -47,13 +40,32 @@ public class InjectedFactory {
 	private static final String PREFIX_BIND_SINGLE = "set";
 	private static final String PREFIX_UNBIND_SINGLE = "unset";
 	
+	private final Bundle bundle;
 	private final IConfigurationElement factoryElement;
-	
+
+	private final Properties properties = new Properties();
+	private final List<String> provides = new ArrayList<String>();
 	private final Map<IConfigurationElement, BindingTracker> trackers = new ConcurrentHashMap<IConfigurationElement, BindingTracker>();
-	private final ComponentContextImpl context;
 
 	public InjectedFactory(Bundle bundle, IConfigurationElement factoryElement) {
+		this.bundle = bundle;
 		this.factoryElement = factoryElement;
+		
+		IConfigurationElement[] propertyElems = factoryElement.getChildren(ELEM_PROPERTY);
+		for (IConfigurationElement propertyElem : propertyElems) {
+			String name = propertyElem.getAttribute(ATTR_PROPERTY_NAME);
+			String value = propertyElem.getAttribute(ATTR_PROPERTY_VALUE);
+			properties.setProperty(name, value != null ? value : "");
+		}
+		
+		IConfigurationElement[] svcElements = factoryElement.getChildren(ELEM_SERVICE);
+		for (IConfigurationElement svcElement : svcElements) {
+			IConfigurationElement[] provideElems = svcElement.getChildren(ELEM_PROVIDE);
+			for (IConfigurationElement provideElem : provideElems) {
+				String provideInterface = provideElem.getAttribute(ATTR_PROVIDE_INTERFACE);
+				provides.add(provideInterface);
+			}
+		}
 		
 		IConfigurationElement[] refElements = factoryElement.getChildren(ELEM_REFERENCE);
 		for (IConfigurationElement refElement : refElements) {
@@ -99,8 +111,6 @@ public class InjectedFactory {
 				e.printStackTrace();
 			}
 		}
-		
-		context = new ComponentContextImpl(trackers);
 	}
  	
 	public void openReferenceTrackers() {
@@ -110,21 +120,29 @@ public class InjectedFactory {
 	}
 	
 	public Object createInstance() throws CoreException {
-		// 1. Create the object
+		// 1. Create the object and component context
 		Object object = factoryElement.createExecutableExtension(ATTR_FACTORY_CLASS);
 		
-		// 2. Set the component context if the object implements the right interface to receive it
-		if(object instanceof InjectedComponent)
-			((InjectedComponent) object).setComponentContext(context);
+		// 2. Publish any services listed in the <provides> elements
+		ServiceRegistration registration = null;
+		if(provides != null && !provides.isEmpty()) {
+			String[] providesArray = provides.toArray(new String[provides.size()]);
+			registration = bundle.getBundleContext().registerService(providesArray, object, properties); 
+		}
 		
-		// 3. Add the new instance to the trackers; this will cause the bind methods to be called with the current
+		// 3. Set the component context if the object implements the right interface to receive it
+		if(object instanceof InjectedComponent) {
+			ComponentContextImpl context = new ComponentContextImpl(trackers, registration);
+			((InjectedComponent) object).setComponentContext(context);
+		}
+		
+		// 4. Add the new instance to the trackers; this will cause the bind methods to be called with the current
 		//    bound service(s).
 		for (BindingTracker tracker : trackers.values()) {
 			try {
 				tracker.addBindingTarget(object);
 			} catch (BindingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, 0, "Binding error occurred adding new instance to trackers.", e));
 			}
 		}
 		

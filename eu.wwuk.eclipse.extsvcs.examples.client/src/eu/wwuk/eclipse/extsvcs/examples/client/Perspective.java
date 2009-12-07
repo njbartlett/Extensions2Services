@@ -17,7 +17,9 @@ public class Perspective implements IPerspectiveFactory {
 	
 	public void createInitialLayout(IPageLayout layout) {
 		layout.setEditorAreaVisible(false);
-		layout.addView("eu.wwuk.eclipse.extsvcs.examples.client.sampleView", IPageLayout.TOP, 1f, IPageLayout.ID_EDITOR_AREA);
+		layout.addView("eu.wwuk.eclipse.extsvcs.examples.views.log", IPageLayout.TOP, 1.0f, IPageLayout.ID_EDITOR_AREA);
+		layout.addView("eu.wwuk.eclipse.extsvcs.examples.views.eventSending", IPageLayout.BOTTOM, 0.33f, "eu.wwuk.eclipse.extsvcs.examples.views.log");
+		layout.addView("eu.wwuk.eclipse.extsvcs.examples.views.eventReceiving", IPageLayout.BOTTOM, 0.5f, "eu.wwuk.eclipse.extsvcs.examples.views.eventSending");
 	}
 
 }

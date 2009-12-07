@@ -34,11 +34,12 @@ public class EventSendingView extends ViewPart implements InjectedComponent {
 	@Override
 	public void createPartControl(Composite parent) {
 		Button button = new Button(parent, SWT.PUSH);
+		button.setText("Send");
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				EventAdmin ea = (EventAdmin) context.locateService("EventAdmin");
 				if (ea != null)
-					ea.postEvent(new Event("PING", (Map) null));
+					ea.postEvent(new Event("PING", (Map<?,?>) null));
 			}
 		});
 	}

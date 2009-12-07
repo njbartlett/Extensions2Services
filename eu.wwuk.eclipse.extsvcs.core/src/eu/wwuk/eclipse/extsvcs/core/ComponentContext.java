@@ -30,5 +30,13 @@ public interface ComponentContext {
 	 * @return The service, or <code>null</code> if the service is currently
 	 *         unavailable or if no reference exists with the specified name.
 	 */
-	Object locateService(String name);
+	Object locateService(String name) throws NoSuchReferenceException;
+	
+	/**
+	 * Dispose any resources used by the component, e.g. service registrations.
+	 * This method is called by the component itself when it becomes aware that
+	 * it has been disposed; for example a View component will call this method
+	 * when its own {@code dispose} method is called.
+	 */
+	void disposed();
 }

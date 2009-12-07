@@ -110,7 +110,11 @@ public class InjectionFactory implements IExecutableExtension,
 		InjectedFactory factory = (factoriesById != null) ? factoriesById.get(factoryId) : null;
 		if(factory == null) throwError("Cannot find an injectedFactory extension with the ID '" + factoryId + "' in bundle '" + contribBundleId + "'.");
 		
-		return factory.createInstance();
+		Object object = factory.createInstance();
+		if(object instanceof IExecutableExtension) {
+			((IExecutableExtension) object).setInitializationData(config, propertyName, null);
+		}
+		return object;
 	}
 
 	void throwError(String message) throws CoreException {

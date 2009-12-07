@@ -50,6 +50,8 @@
    <element name="factory">
       <complexType>
          <sequence>
+            <element ref="property" minOccurs="1" maxOccurs="unbounded"/>
+            <element ref="service" minOccurs="0" maxOccurs="1"/>
             <element ref="reference" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="id" type="string" use="required">
@@ -63,6 +65,29 @@
             <annotation>
                <documentation>
                   The Java class to be instantiated by this factory, which must have a zero-argument constructor and may optionally implement the &lt;samp&gt;InjectedComponent&lt;/samp&gt; interface.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="service">
+      <complexType>
+         <sequence>
+            <element ref="provide" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
+      </complexType>
+   </element>
+
+   <element name="provide">
+      <complexType>
+         <attribute name="interface" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
                </documentation>
                <appinfo>
                   <meta.attribute kind="java"/>
@@ -135,6 +160,28 @@
       </complexType>
    </element>
 
+   <element name="property">
+      <complexType>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="value" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
    <annotation>
       <appinfo>
          <meta.section type="since"/>
@@ -151,28 +198,28 @@
       <documentation>
          &lt;p&gt;
 &lt;pre&gt;
-	&lt;!-- Factory Declaration --&gt;
-	&lt;extension
-	      point=&quot;eu.wwuk.eclipse.extsvcs.core.injectedFactories&quot;&gt;
-	   &lt;factory
-	         id=&quot;logReaderView&quot;
-	         class=&quot;org.example.view.LogReaderView&quot;&gt;
-	      &lt;reference
-	            interface=&quot;org.osgi.service.log.LogReaderService&quot;&gt;
-	      &lt;/reference&gt;
-	   &lt;/factory&gt;
-	&lt;/extension&gt;
+ &lt;!-- Factory Declaration --&gt;
+ &lt;extension
+       point=&quot;eu.wwuk.eclipse.extsvcs.core.injectedFactories&quot;&gt;
+    &lt;factory
+          id=&quot;logReaderView&quot;
+          class=&quot;org.example.view.LogReaderView&quot;&gt;
+       &lt;reference
+             interface=&quot;org.osgi.service.log.LogReaderService&quot;&gt;
+       &lt;/reference&gt;
+    &lt;/factory&gt;
+ &lt;/extension&gt;
 
-	&lt;!-- Standard View Declaration --&gt;
-	&lt;extension
-	      point=&quot;org.eclipse.ui.views&quot;&gt;
-	   &lt;view
-	         id=&quot;org.example.views.logView&quot;
-	         class=&quot;eu.wwuk.eclipse.extsvcs.core.InjectionFactory:logReaderView&quot;
-	         name=&quot;Log Reader&quot;
-	         icon=&quot;icons/log.gif&quot;&gt;
-	   &lt;/view&gt;
-	&lt;/extension&gt;
+ &lt;!-- Standard View Declaration --&gt;
+ &lt;extension
+       point=&quot;org.eclipse.ui.views&quot;&gt;
+    &lt;view
+          id=&quot;org.example.views.logView&quot;
+          class=&quot;eu.wwuk.eclipse.extsvcs.core.InjectionFactory:logReaderView&quot;
+          name=&quot;Log Reader&quot;
+          icon=&quot;icons/log.gif&quot;&gt;
+    &lt;/view&gt;
+ &lt;/extension&gt;
 &lt;/pre&gt;
 &lt;/p&gt;
       </documentation>

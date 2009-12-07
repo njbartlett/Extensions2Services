@@ -17,17 +17,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.tracker.ServiceTracker;
 
 import eu.wwuk.eclipse.extsvcs.core.ComponentContext;
+import eu.wwuk.eclipse.extsvcs.core.NoSuchReferenceException;
 
 public class ComponentContextImpl implements ComponentContext {
 	
 	final Map<String, ServiceTracker> trackerMap = new HashMap<String, ServiceTracker>();
+	final ServiceRegistration registration;
 	
-	public ComponentContextImpl(Map<IConfigurationElement, ? extends ServiceTracker> references) {
+	public ComponentContextImpl(Map<IConfigurationElement, ? extends ServiceTracker> references, ServiceRegistration registration) {
+		this.registration = registration;
 		for (Entry<IConfigurationElement, ? extends ServiceTracker> entry : references.entrySet()) {
 			IConfigurationElement element = entry.getKey();
 			String name = element.getAttribute(ATTR_REFERENCE_NAME);
@@ -39,8 +42,15 @@ public class ComponentContextImpl implements ComponentContext {
 		}
 	}
 
-	public Object locateService(String name) {
+	public Object locateService(String name) throws NoSuchReferenceException {
 		ServiceTracker serviceTracker = trackerMap.get(name);
+		if(serviceTracker == null)
+			throw new NoSuchReferenceException(name);
 		return serviceTracker.getService();
+	}
+
+	public void disposed() {
+		if(registration != null)
+			registration.unregister();
 	}
 }

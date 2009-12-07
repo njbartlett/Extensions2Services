@@ -33,9 +33,19 @@
          point="org.eclipse.ui.views">
       <view
             class="eu.wwuk.eclipse.extsvcs.core.InjectionFactory:logReaderView"
-            icon="icons/alt_about.gif"
-            id="org.example.views.logView"
+            id="eu.wwuk.eclipse.extsvcs.examples.views.log"
             name="Log Reader">
+      </view>
+      <view
+            class="eu.wwuk.eclipse.extsvcs.core.InjectionFactory:eventSendingView"
+            id="eu.wwuk.eclipse.extsvcs.examples.views.eventSending"
+            name="Event Sending">
+      </view>
+      <view
+            class="eu.wwuk.eclipse.extsvcs.core.InjectionFactory:eventReceivingView"
+            id="eu.wwuk.eclipse.extsvcs.examples.views.eventReceiving"
+            name="Event Receiving"
+            restorable="true">
       </view>
    </extension>
    <extension
@@ -45,7 +55,7 @@
             id="logReaderView">
          <reference
                cardinality="single"
-               interface="org.osgi.service.log.LogService">
+               interface="org.osgi.service.log.LogReaderService">
          </reference>
       </factory>
       <factory
@@ -55,6 +65,28 @@
                cardinality="single"
                interface="org.osgi.service.log.LogService">
          </reference>
+      </factory>
+      <factory
+            class="eu.wwuk.eclipse.extsvcs.examples.client.view.EventSendingView"
+            id="eventSendingView">
+         <reference
+               cardinality="single"
+               interface="org.osgi.service.event.EventAdmin"
+               name="EventAdmin">
+         </reference>
+      </factory>
+      <factory
+            class="eu.wwuk.eclipse.extsvcs.examples.client.view.EventReceivingView"
+            id="eventReceivingView">
+         <service>
+            <provide
+                  interface="org.osgi.service.event.EventHandler">
+            </provide>
+         </service>
+         <property
+               name="event.topics"
+               value="*">
+         </property>
       </factory>
    </extension>
    <extension

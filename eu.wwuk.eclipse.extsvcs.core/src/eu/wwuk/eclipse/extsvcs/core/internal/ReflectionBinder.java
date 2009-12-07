@@ -38,7 +38,8 @@ public class ReflectionBinder implements Binder {
 		} catch (SecurityException e) {
 			throw new BindingException(e);
 		} catch (NoSuchMethodException e) {
-			throw new BindingException(e);
+			//throw new BindingException(e);
+			// TODO: print warning to log?
 		}
 	}
 

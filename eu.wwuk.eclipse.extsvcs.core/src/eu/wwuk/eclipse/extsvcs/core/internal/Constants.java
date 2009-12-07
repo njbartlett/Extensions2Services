@@ -17,6 +17,14 @@ public class Constants {
 	static final String ATTR_FACTORY_ID = "id";
 	static final String ATTR_FACTORY_CLASS = "class";
 	
+	static final String ELEM_PROPERTY = "property";
+	static final String ATTR_PROPERTY_NAME = "name";
+	static final String ATTR_PROPERTY_VALUE = "value";
+	
+	static final String ELEM_SERVICE = "service";
+	static final String ELEM_PROVIDE = "provide";
+	static final String ATTR_PROVIDE_INTERFACE = "interface";
+	
 	static final String ELEM_REFERENCE = "reference";
 	static final String ATTR_REFERENCE_NAME = "name";
 	static final String ATTR_REFERENCE_INTERFACE = "interface";
