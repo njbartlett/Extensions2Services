@@ -87,17 +87,37 @@ A na\"\i{}ve approach to accessing services from an extension might be to create
 
 \section{Our Approach}
 
-\emph{E2s} uses a conceptually simple solution to the above problems. It defines the idea of an ``injected factory'', which is a factory that manages references to one or more OSGi services. An injected factory is declared and configured via its own extension point; this is an approach that will be very familiar to Eclipse developers. Once configured, the factory is used as an alternative means of supplying new extension objects for any arbitrary extension point.
+\emph{E2s} uses a conceptually simple solution to the above problems. It defines
+the idea of an ``injected factory'', which is a factory that manages references
+to one or more OSGi services. An injected factory is declared and configured via
+its own extension point; this is an approach that will be very familiar to
+Eclipse developers. Once configured, the factory is used as an alternative means
+of supplying new extension objects for any arbitrary extension point.
 
-A factory may have zero or more references to services, and these references are managed at the factory level. Therefore if a bundle declares one factory containing one reference, then a maximum of one tracker is created. The factory uses the tracker to update all instances of the component class that it has previously created and have not yet been garbage-collected\footnote{To allow the generated objects from a factory to be GC'd, the factory maintains only weak references to them. They therefore become eligible for collection as soon as they are no longer used by the client that requested their creation.}.
+A factory may have zero or more references to services, and these references are
+managed at the factory level. Therefore if a bundle declares one factory
+containing one reference, then a maximum of one tracker is created. The factory
+uses the tracker to update all instances of the component class that it has
+previously created and have not yet been garbage-collected\footnote{To allow the
+generated objects from a factory to be GC'd, the factory maintains only weak
+references to them. They therefore become eligible for collection as soon as they
+are no longer used by the client that requested their creation.}.
 
-Much of the design of \emph{e2s} is inspired by the Declarative Services specification from the OSGi Services Compendium. Unfortunately DS itself is not directly usable for our purposes but its style of referencing services and defining components is close to our needs.
+Much of the design of \emph{e2s} is inspired by the Declarative Services
+specification from the OSGi Services Compendium. Unfortunately DS itself is not
+directly usable for our purposes but its style of referencing services and
+defining components is close to our needs.
 
 \section{Development Guide}
 
 \subsection{The Injected Factories Extension Point}
 
-The \texttt{eu.wwuk.eclipse.extsvcs.core.injectedFactories} extension point allows us to define a factory where each instance object generated from the factory is ``injected'' with a service reference. Each instance is also subsequently notified when bound services become registered or unregistered. To declare a new injected factory, we create an extension to the \texttt{injected\-Fac\-tories} extension point as follows:
+The \texttt{eu.wwuk.eclipse.extsvcs.core.injectedFactories} extension point
+allows us to define a factory where each instance object generated from the
+factory is ``injected'' with a service reference. Each instance is also
+subsequently notified when bound services become registered or unregistered. To
+declare a new injected factory, we create an extension to the
+\texttt{injected\-Fac\-tories} extension point as follows:
 
 \begin{lstlisting}[language=xml]
    <extension
@@ -113,7 +133,9 @@ The \texttt{eu.wwuk.eclipse.extsvcs.core.injectedFactories} extension point allo
    </extension>
 \end{lstlisting}
 
-This declares a factory with the identity \texttt{logReaderView} that creates new instances of the \texttt{LogReaderView} class. The attributes of the \texttt{factory} element are shown in Table \ref{tbl:factory_element_attributes}.
+This declares a factory with the identity \texttt{logReaderView} that creates new
+instances of the \texttt{LogReaderView} class. The attributes of the
+\texttt{factory} element are shown in Table \ref{tbl:factory_element_attributes}.
 
 \begin{table}
 	\centering
@@ -226,17 +248,41 @@ It is also important to remember that GUI operations must only be performed on t
 
 \subsection{The Service Lookup Strategy}
 
-Since the dynamism of bind and unbind methods can complicate the programming of otherwise-simple objects, we offer an alternative mechanism for looking up service instances when the service is needed by the extension object.
+Since the dynamism of bind and unbind methods can complicate the programming of
+otherwise-simple objects, we offer an alternative mechanism for looking up
+service instances when the service is needed by the extension object.
 
-The lookup method is named \texttt{locateService} and it exists on an interface named \texttt{ComponentContext}. We need a way to supply an instance of this \texttt{Comp\-onent\-Con\-text} to the extension object, therefore we define another interface \texttt{Inj\-ected\-Comp\-onent} with one method, \texttt{setComponentContext}. When a factory creates a new object it will check if the object implements \texttt{InjectedComponent} and if so it will provide it with its context by calling \texttt{setComponentContext}.
+The lookup method is named \texttt{locateService} and it exists on an interface
+named \texttt{ComponentContext}. We need a way to supply an instance of this
+\texttt{Comp\-onent\-Con\-text} to the extension object, therefore we define
+another interface \texttt{Inj\-ected\-Comp\-onent} with one method,
+\texttt{setComponentContext}. When a factory creates a new object it will check
+if the object implements \texttt{InjectedComponent} and if so it will provide it
+with its context by calling \texttt{setComponentContext}.
 
-The \texttt{locateService} method takes the name of one of the declared reference elements and returns a snapshot of the currently bound service instance, or \texttt{null} if the reference is unbound. Note that the extension object must not hold onto the return value from \texttt{locateService} and reuse it over a period of time; it is intended to be used as quickly as possible and then discarded. Listing \ref{lst:EventSendingView.java} shows an example of typical usage of the lookup strategy.
+The \texttt{locateService} method takes the name of one of the declared reference
+elements and returns a snapshot of the currently bound service instance, or
+\texttt{null} if the reference is unbound. Note that the extension object must
+not hold onto the return value from \texttt{locateService} and reuse it over a
+period of time; it is intended to be used as quickly as possible and then
+discarded. Listing \ref{lst:EventSendingView.java} shows an example of typical
+usage of the lookup strategy.
 
 \begin{program}
 \lstinputlisting[firstline=17]{../eu.wwuk.eclipse.extsvcs.examples.client/src/eu/wwuk/eclipse/extsvcs/examples/client/view/EventSendingView.java}
 \caption{Example Usage of the Lookup Strategy}
 \label{lst:EventSendingView.java}
 \end{program}
+
+\subsection{Service Publishing}
+
+Sometimes we wish our extension objects not just to bind to existing services
+but also to publish themselves as services. This is often necessary for these
+objects to participate in the so-called ``whiteboard pattern''. For example,
+suppose we wish to receive and display Event objects posted to the Event Admin
+service: to do this, we must publish a service under the \texttt{EventHandler}
+interface 
+
 
 
 \end{document}

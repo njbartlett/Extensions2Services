@@ -39,7 +39,7 @@ public class EventSendingView extends ViewPart implements InjectedComponent {
 			public void widgetSelected(SelectionEvent e) {
 				EventAdmin ea = (EventAdmin) context.locateService("EventAdmin");
 				if (ea != null)
-					ea.postEvent(new Event("PING", (Map<?,?>) null));
+					ea.postEvent(new Event("PING", (Map) null));
 			}
 		});
 	}
