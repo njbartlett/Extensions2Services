@@ -50,7 +50,7 @@
    <element name="factory">
       <complexType>
          <sequence>
-            <element ref="property" minOccurs="1" maxOccurs="unbounded"/>
+            <element ref="property" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="service" minOccurs="0" maxOccurs="1"/>
             <element ref="reference" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
