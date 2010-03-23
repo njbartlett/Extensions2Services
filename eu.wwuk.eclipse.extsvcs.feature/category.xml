@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/eu.wwuk.eclipse.extsvcs.feature_1.0.0.qualifier.jar" id="eu.wwuk.eclipse.extsvcs.feature" version="1.0.0.qualifier">
+      <category name="e2s"/>
+   </feature>
+   <category-def name="e2s" label="Extensions-2-Services"/>
+</site>

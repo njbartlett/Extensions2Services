@@ -11,7 +11,7 @@ Extensions2Services ("e2s") is a very small and lightweight framework for integr
 Example
 -------
 
-The approach used by e2s us to delcare an "injected factory" using a special extension point. That factory may then be referenced by extensions into any other arbitrary extension point. The following example shows the use of e2s to declare an Eclipse view that uses the OSGi `LogReaderService`:
+The approach used by e2s is to declare an "injected factory" using a special extension point. That factory may then be referenced by extensions into any other arbitrary extension point. The following example shows the use of e2s to declare an Eclipse view that uses the OSGi `LogReaderService`:
     
 	<!-- Factory Declaration -->
 	<extension
@@ -36,7 +36,7 @@ The approach used by e2s us to delcare an "injected factory" using a special ext
 	   </view>
 	</extension>
 
-Notice thta the view extension declaration is exactly the same as a normal view declaration, except for the content of the `class` attribute.
+Notice that the view extension declaration is exactly the same as a normal view declaration, except for the content of the `class` attribute.
 
 Further Information
 -------------------
